@@ -10,7 +10,7 @@ export default function NewSalePage() {
   const [products, setProducts] = useState<Opt[]>([]);
   const [form, setForm] = useState({
     clientId: "", productId: "", quantity: "1", totalPrice: "", initialPayment: "0",
-    frequency: "MONTHLY", installmentCount: "3", firstDueDate: "", notes: "",
+    firstDueDate: "", notes: "",
   });
   const [error, setError] = useState("");
   const router = useRouter();
@@ -34,8 +34,7 @@ export default function NewSalePage() {
       body: JSON.stringify({
         clientId: form.clientId, productId: form.productId,
         quantity: Number(form.quantity), totalPrice: Number(form.totalPrice),
-        initialPayment: Number(form.initialPayment), frequency: form.frequency,
-        installmentCount: Number(form.installmentCount),
+        initialPayment: Number(form.initialPayment), frequency: "FULL",
         firstDueDate: form.firstDueDate || undefined, notes: form.notes || undefined,
       }),
     });
@@ -79,21 +78,7 @@ export default function NewSalePage() {
             <input className={input} type="number" min="0" step="0.01" value={form.initialPayment} onChange={(e) => setForm({ ...form, initialPayment: e.target.value })} />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Payment plan</label>
-            <select className={input} value={form.frequency} onChange={(e) => setForm({ ...form, frequency: e.target.value })}>
-              <option value="FULL">Full payment</option>
-              <option value="WEEKLY">Weekly installments</option>
-              <option value="MONTHLY">Monthly installments</option>
-            </select>
-          </div>
-          {form.frequency !== "FULL" && (
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Number of installments</label>
-              <input className={input} type="number" min="1" max="60" value={form.installmentCount} onChange={(e) => setForm({ ...form, installmentCount: e.target.value })} />
-            </div>
-          )}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">First due date</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Due date</label>
             <input className={input} type="date" value={form.firstDueDate} onChange={(e) => setForm({ ...form, firstDueDate: e.target.value })} />
           </div>
           <div className="sm:col-span-2">
@@ -102,10 +87,7 @@ export default function NewSalePage() {
           </div>
 
           <div className="rounded-lg bg-slate-50 p-4 text-sm sm:col-span-2">
-            Remaining to schedule: <strong>{remaining.toLocaleString("fr-DZ")} DZD</strong>
-            {form.frequency !== "FULL" && Number(form.installmentCount) > 0 && remaining > 0 && (
-              <span className="text-slate-500"> ≈ {(remaining / Number(form.installmentCount)).toLocaleString("fr-DZ")} DZD / installment</span>
-            )}
+            Remaining balance: <strong>{remaining.toLocaleString("fr-DZ")} DZD</strong>
           </div>
 
           {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}

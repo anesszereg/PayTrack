@@ -31,7 +31,7 @@ export async function notify(
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (user) {
     await sendWhatsApp(user.phone, `${title}\n${message}`);
-    await sendEmail(user.email, title, message);
+    if (user.email) await sendEmail(user.email, title, message);
   }
   return notif;
 }
