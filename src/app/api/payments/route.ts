@@ -8,11 +8,13 @@ import { Prisma } from "@prisma/client";
 export async function POST(req: Request) {
   const { error } = await requireAdmin();
   if (error) return error;
-  const { saleId, amount, method = "cash", note, installmentId } = await req.json();
+  const { saleId, amount, date, method = "cash", note, installmentId } = await req.json();
   if (!saleId || amount == null)
     return NextResponse.json({ error: "saleId and amount required" }, { status: 400 });
   const amt = new Prisma.Decimal(amount);
   if (amt.lte(0)) return NextResponse.json({ error: "amount must be positive" }, { status: 400 });
+  const paidAt = date ? new Date(date) : new Date();
+  if (isNaN(paidAt.getTime())) return NextResponse.json({ error: "invalid date" }, { status: 400 });
 
   const sale = await prisma.sale.findUnique({
     where: { id: saleId },
@@ -23,7 +25,7 @@ export async function POST(req: Request) {
 
   const payment = await prisma.$transaction(async (tx) => {
     const p = await tx.payment.create({
-      data: { saleId, installmentId: installmentId || null, amount: amt, method, note: note || null, receiptNo: `RC-${Date.now()}` },
+      data: { saleId, installmentId: installmentId || null, amount: amt, method, note: note || null, createdAt: paidAt, receiptNo: `RC-${Date.now()}` },
     });
     await applyPayment(tx, saleId, amt, installmentId);
     return p;

@@ -7,6 +7,7 @@ type Inst = { id: string; number: number; amount: number; paidAmount: number; du
 
 export default function RecordPayment({ saleId, outstanding, installments }: { saleId: string; outstanding: number; installments: Inst[] }) {
   const [amount, setAmount] = useState("");
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [method, setMethod] = useState("cash");
   const [installmentId, setInstallmentId] = useState("");
   const [note, setNote] = useState("");
@@ -20,7 +21,7 @@ export default function RecordPayment({ saleId, outstanding, installments }: { s
     const res = await fetch("/api/payments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ saleId, amount: Number(amount), method, note: note || undefined, installmentId: installmentId || undefined }),
+      body: JSON.stringify({ saleId, amount: Number(amount), date, method, note: note || undefined, installmentId: installmentId || undefined }),
     });
     setLoading(false);
     if (!res.ok) return setError((await res.json()).error || "Error recording payment");
@@ -36,6 +37,10 @@ export default function RecordPayment({ saleId, outstanding, installments }: { s
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">Amount *</label>
           <input className={input} type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">Date *</label>
+          <input className={input} type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">Method</label>
